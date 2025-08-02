@@ -1,0 +1,24 @@
+{
+  "name": "Contract Signing Session",
+  "description": "Settings for Therry LLC contract signing",
+  "hooks": {
+    "sessionStart": [
+      {
+        "name": "Contract Signing Setup",
+        "script": "#!/bin/bash\necho ''\necho '=============================================='\necho '   THERRY LLC CONTRACT SIGNING SYSTEM'\necho '=============================================='\necho ''\necho 'Checking prerequisites...'\necho ''\n\n# Create session file\ntouch .contract-signing-active\n\n# Check GitHub CLI\nif ! command -v gh &> /dev/null; then\n  echo '❌ GitHub CLI not installed'\n  echo '   Please install: https://cli.github.com/'\n  echo '   macOS: brew install gh'\n  echo '   Ubuntu: sudo apt install gh'\n  echo '   Windows: winget install --id GitHub.cli'\n  echo ''\nelse\n  echo '✅ GitHub CLI installed'\n  # Check auth\n  if gh auth status &> /dev/null; then\n    echo '✅ GitHub authenticated as:' $(gh api user -q .login)\n  else\n    echo '⚠️  GitHub not authenticated'\n    echo '   You will need to authenticate with GitHub'\n    echo '   This includes 2FA if you have it enabled'\n    echo ''\n  fi\nfi\n\n# Check GPG\nif ! command -v gpg &> /dev/null; then\n  echo '❌ GPG not installed'\n  echo '   Please install: brew install gnupg'\n  echo ''\nelse\n  echo '✅ GPG installed'\n  # Check for key\n  if gpg --list-secret-keys 2>/dev/null | grep -q 'sec'; then\n    echo '✅ GPG key found'\n  else\n    echo '⚠️  No GPG key found'\n    echo '   You will need to create one'\n    echo ''\n  fi\nfi\n\n# Check Git signing\nif [[ $(git config --global commit.gpgsign) == 'true' ]]; then\n  echo '✅ Git GPG signing enabled'\nelse\n  echo '⚠️  Git GPG signing not enabled'\n  echo '   You will need to configure it'\n  echo ''\nfi\n\necho ''\necho '=============================================='\necho ''\necho 'Type \"init\" to begin the contract signing process'\necho 'I will help you:'\necho '  1. Fix any missing prerequisites'\necho '  2. Clone the necessary repositories'\necho '  3. Sign the operating agreement'\necho ''\necho '=============================================='"
+      }
+    ],
+    "userPromptSubmit": [
+      {
+        "name": "Initialize Contract Signing",
+        "matcher": {
+          "prompt": {
+            "pattern": "^init$",
+            "flags": "i"
+          }
+        },
+        "script": "#!/bin/bash\necho 'Initializing contract signing process...'\necho ''\necho '@https://raw.githubusercontent.com/matznerd/contract-signing-starter/main/INIT-CLAUDE.md'"
+      }
+    ]
+  }
+}
